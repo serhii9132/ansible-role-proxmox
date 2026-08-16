@@ -1,0 +1,18 @@
+---
+driver:
+  name: molecule-proxmox
+  options:
+    proxmox_secrets: $HOME/.molecule/proxmox-secrets.yml
+    full: true
+
+platforms:
+  - name: "molecule-debian-13-tmp"
+    template_name: debian-13-tmp
+    ipconfig:
+      ipconfig0: 'ip=dhcp'
+
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_VERBOSITY: 2
+    ANSIBLE_STDOUT_CALLBACK: yaml

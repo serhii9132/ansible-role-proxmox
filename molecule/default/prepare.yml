@@ -1,0 +1,7 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: "Waiting for instance ssh connection."
+      ansible.builtin.wait_for_connection:

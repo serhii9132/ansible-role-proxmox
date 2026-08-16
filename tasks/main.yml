@@ -1,0 +1,55 @@
+---
+- name: Apply /etc/hosts from template
+  ansible.builtin.template:
+    src: hosts.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: '644'
+
+- name: Add Proxmox VE repository
+  ansible.builtin.deb822_repository:
+    name: proxmox
+    types: ["deb"]
+    uris: [http://download.proxmox.com/debian/pve]
+    suites: "{{ ansible_distribution_release }}"
+    components: pve-no-subscription
+    signed_by: https://enterprise.proxmox.com/debian/proxmox-archive-keyring-trixie.gpg
+    state: present
+
+- name: Apt update and upgrade
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: full
+
+- name: Skip GRUB device configuration
+  ansible.builtin.debconf:
+    name: grub-pc
+    question: grub-pc/install_devices_empty
+    vtype: boolean
+    value: 'true'
+
+- name: Install the Proxmox VE Kernel
+  ansible.builtin.apt:
+    name: proxmox-default-kernel
+  notify: Reboot server
+
+- name: Reboot server immediately
+  ansible.builtin.meta: flush_handlers
+
+- name: Install Proxmox VE Packages
+  ansible.builtin.apt:
+    name: "{{ __proxmox_packages }}"
+
+- name: Remove the Debian Kernel
+  ansible.builtin.apt:
+    name:
+      - "linux-image-amd64"
+      - "linux-image-6.12*"
+    state: absent
+  notify: Update grub
+
+- name: Remove the os-prober package
+  ansible.builtin.apt:
+    name: os-prober
+    state: absent

@@ -1,0 +1,5 @@
+__proxmox_packages:
+  - proxmox-ve
+  - postfix
+  - open-iscsi
+  - chrony
